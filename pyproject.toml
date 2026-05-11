@@ -1,0 +1,12 @@
+[project]
+name = "xhs-qwen-transcriber"
+version = "0.1.0"
+description = "Plugin-based video downloader and Qwen ASR transcriber"
+requires-python = ">=3.11"
+authors = [{ name = "Codex" }]
+
+[project.scripts]
+xhs-qwen = "xhs_qwen_transcriber.cli:main"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
