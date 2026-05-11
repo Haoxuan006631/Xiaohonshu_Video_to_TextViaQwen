@@ -1,22 +1,33 @@
-# Xiaohongshu Video to Text via Qwen
+# 小红书视频转文字工具
 
-A small Python CLI for downloading videos through plugins and turning speech into text with DashScope ASR.
+这是一个基于 Python 的命令行工具，用于：
 
-This project currently focuses on Xiaohongshu / Rednote links, but the downloader layer is plugin-based so it can be extended to other sources later.
+- 通过插件下载视频
+- 解析小红书 / Rednote 视频链接
+- 调用 DashScope ASR 做语音转文字
+- 将转写结果保存到本地文本文件
 
-> Use this project only for content you own, are authorized to process, or are otherwise allowed to access and transcribe. It does not attempt to bypass DRM, payment gates, or platform access controls.
+当前项目主要围绕小红书链接场景构建，但下载层是插件式设计，后续可以继续扩展到其他平台。
 
-## Project Overview
+> 请仅处理你拥有、已获授权，或平台允许访问与转写的内容。本项目不会绕过 DRM、付费限制或平台访问控制。
 
-- Download a video from a supported link
-- Resolve Xiaohongshu pages through a dedicated plugin
-- Transcribe speech with DashScope ASR
-- Save the transcript to a local text file
-- Keep the architecture open for additional video source plugins
+## 项目介绍
 
-## Quick Start
+这个项目的目标很直接：给一个视频链接，程序自动完成下载、提取可转写内容，并输出文字结果。
 
-### 1. Install system dependencies
+当前已支持的核心能力：
+
+- 处理小红书 / Rednote 视频链接
+- 支持直链视频和本地视频文件
+- 自动选择合适的 ASR 后端
+- 支持本地配置 API Key 和 Cookie
+- 支持后续通过插件机制扩展更多来源
+
+## 快速开始
+
+### 1. 安装系统依赖
+
+先确认本机有这些工具：
 
 ```bash
 python3 --version
@@ -25,33 +36,33 @@ yt-dlp --version
 curl --version
 ```
 
-On macOS with Homebrew:
+如果你在 macOS 上使用 Homebrew，可以执行：
 
 ```bash
 brew install ffmpeg yt-dlp
 ```
 
-### 2. Clone the repo and enter it
+### 2. 克隆仓库
 
 ```bash
 git clone https://github.com/Haoxuan006631/Xiaohonshu_Video_to_TextViaQwen.git
 cd Xiaohonshu_Video_to_TextViaQwen
 ```
 
-### 3. Create your local secrets file
+### 3. 创建本地配置文件
 
-Copy the example file:
+复制示例配置：
 
 ```bash
 cp local.secrets.example.json local.secrets.json
 ```
 
-Then fill in:
+然后填写你自己的信息：
 
-- `api_key`: your DashScope API key
-- `cookie_header`: your Xiaohongshu / Rednote browser cookie string
+- `api_key`：DashScope API Key
+- `cookie_header`：浏览器中复制出来的小红书 Cookie 字符串
 
-### 4. Run the CLI
+### 4. 运行命令
 
 ```bash
 PYTHONPATH=src python3 -m xhs_qwen_transcriber.cli \
@@ -60,13 +71,13 @@ PYTHONPATH=src python3 -m xhs_qwen_transcriber.cli \
   "https://www.xiaohongshu.com/discovery/item/..."
 ```
 
-## Configuration
+## 配置方式
 
-The CLI supports two ways to provide secrets.
+程序支持两种常见配置方式。
 
-### Option A: `local.secrets.json`
+### 方式一：使用 `local.secrets.json`
 
-Example:
+示例：
 
 ```json
 {
@@ -75,7 +86,7 @@ Example:
 }
 ```
 
-### Option B: pass values directly
+### 方式二：在命令行直接传入
 
 ```bash
 PYTHONPATH=src python3 -m xhs_qwen_transcriber.cli \
@@ -84,7 +95,7 @@ PYTHONPATH=src python3 -m xhs_qwen_transcriber.cli \
   "https://www.xiaohongshu.com/discovery/item/..."
 ```
 
-You can also use a Netscape-style cookie file:
+如果你已经有 Netscape 格式的 `cookies.txt` 文件，也可以这样传：
 
 ```bash
 PYTHONPATH=src python3 -m xhs_qwen_transcriber.cli \
@@ -92,9 +103,9 @@ PYTHONPATH=src python3 -m xhs_qwen_transcriber.cli \
   "https://www.xiaohongshu.com/discovery/item/..."
 ```
 
-## Example Commands
+## 示例命令
 
-### Xiaohongshu / Rednote item link
+### 处理小红书 / Rednote 完整视频链接
 
 ```bash
 PYTHONPATH=src python3 -m xhs_qwen_transcriber.cli \
@@ -103,7 +114,7 @@ PYTHONPATH=src python3 -m xhs_qwen_transcriber.cli \
   "https://www.xiaohongshu.com/discovery/item/68a32405000000001d004cdb?..."
 ```
 
-### Local video file
+### 处理本地视频文件
 
 ```bash
 PYTHONPATH=src python3 -m xhs_qwen_transcriber.cli \
@@ -111,7 +122,7 @@ PYTHONPATH=src python3 -m xhs_qwen_transcriber.cli \
   ./demo.mp4
 ```
 
-### Force the ASR backend
+### 强制指定 ASR 后端
 
 ```bash
 PYTHONPATH=src python3 -m xhs_qwen_transcriber.cli \
@@ -120,45 +131,45 @@ PYTHONPATH=src python3 -m xhs_qwen_transcriber.cli \
   "https://www.xiaohongshu.com/discovery/item/..."
 ```
 
-## How It Works
+## 工作原理
 
-### Download layer
+### 下载层
 
-The downloader is plugin-based. Built-in plugins include:
+下载层使用插件机制，当前内置插件包括：
 
 - `xiaohongshu-ytdlp`
 - `direct-url`
 - `local-file`
 
-For Xiaohongshu, the plugin uses a two-stage flow:
+其中小红书插件采用两段式流程：
 
-1. `yt-dlp` parses the shared page and extracts the real media URL
-2. `curl` downloads the media directly
+1. 用 `yt-dlp` 解析分享页，提取真实媒体 URL
+2. 用 `curl` 直接下载视频
 
-This is more reliable than letting `yt-dlp` handle the final video transfer by itself for some Rednote links.
+这样做比完全依赖 `yt-dlp` 承担最终下载更稳定，尤其是在部分小红书链接场景下。
 
-### ASR layer
+### 转写层
 
-The CLI supports:
+当前支持三种后端模式：
 
 - `fun-asr`
 - `qwen`
 - `auto`
 
-Current behavior:
+默认策略如下：
 
-- If the downloader returns a public media URL, `auto` prefers `fun-asr`
-- If only a local file is available, `auto` falls back to `qwen`
+- 如果下载结果里有公网可访问的媒体 URL，`auto` 优先使用 `fun-asr`
+- 如果只有本地文件可用，`auto` 回退到 `qwen`
 
-## Output
+## 输出结果
 
-By default, output is written under `runs/`:
+默认输出目录在 `runs/` 下：
 
-- `runs/downloads/` for downloaded videos
-- `runs/audio/` for extracted audio when using local-audio transcription
-- `runs/transcript.txt` for the final transcript
+- `runs/downloads/`：下载后的视频文件
+- `runs/audio/`：使用本地音频转写时生成的中间音频
+- `runs/transcript.txt`：最终转写文本
 
-## Project Structure
+## 项目结构
 
 ```text
 src/xhs_qwen_transcriber/
@@ -171,36 +182,43 @@ src/xhs_qwen_transcriber/
   plugins/
 ```
 
-## Notes and Limitations
+## 注意事项
 
-- Xiaohongshu short links may be less stable than full item URLs
-- Some links require a valid browser session cookie
-- DashScope region matters:
-  - `--region intl` for international / Singapore credentials
-  - `--region cn` for mainland China credentials
-- Some source media URLs may be downloadable from your machine but not retrievable by the ASR provider from their servers
-- For local-file transcription with `qwen`, very large audio inputs may exceed the sync upload path used in this project
+- 小红书短链通常不如完整 `item` 链接稳定
+- 某些链接必须依赖有效的浏览器登录态 Cookie
+- DashScope 区域要和你的密钥匹配：
+  - `--region intl`：国际区 / 新加坡
+  - `--region cn`：中国内地区域
+- 有些媒体 URL 你的机器可以访问，但云端 ASR 服务端不一定能成功拉取
+- 使用 `qwen` 做本地音频同步转写时，过大的音频文件可能超出当前实现的同步上传限制
 
-## Development Notes
+## 开发说明
 
-Run help:
+查看 CLI 帮助：
 
 ```bash
 PYTHONPATH=src python3 -m xhs_qwen_transcriber.cli --help
 ```
 
-Sanity check syntax:
+做语法检查：
 
 ```bash
 python3 -m compileall src
 ```
 
-## Custom Plugins
+## 自定义插件
 
-See [examples/custom_plugin.py](examples/custom_plugin.py) for the minimal shape of a custom plugin.
+可以参考 [examples/custom_plugin.py](examples/custom_plugin.py) 编写自定义插件。
 
-Each plugin should expose a `register(registry)` function and a plugin object with:
+每个插件至少需要提供：
 
 - `name`
 - `can_handle(url)`
 - `download(request)`
+
+同时导出：
+
+```python
+def register(registry):
+    registry.register(YourPlugin())
+```
