@@ -1,5 +1,5 @@
-.vendor/
+/.vendor/
 __pycache__/
-runs/
-plugins/
-local.secrets.json
+/runs/
+/plugins/
+/local.secrets.json
